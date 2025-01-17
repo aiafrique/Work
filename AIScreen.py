@@ -4,6 +4,25 @@ import cv2
 import numpy as np
 import mss
 from threading import Thread
+import pyautogui
+import time
+
+def move_mouse(x, y, duration=1):
+    """
+    Moves the mouse to a specific position on the screen.
+    :param x: X-coordinate on the screen.
+    :param y: Y-coordinate on the screen.
+    :param duration: Time taken to move the mouse.
+    """
+    pyautogui.moveTo(x, y, duration=duration)
+    print(f"Mouse moved to ({x}, {y})")
+
+def simulate_spacebar():
+    """
+    Simulates a spacebar press.
+    """
+    pyautogui.press('space')
+    print("Spacebar pressed")
 
 def start_live_view():
     """Function to start the live screen capture in a new window."""
@@ -47,11 +66,23 @@ def start_live_view():
 # Create the main application window
 root = tk.Tk()
 root.title("Screen Capture App")
-root.geometry("300x200")
+root.geometry("600x400")
 
 # Add a button to start the live screen capture
 start_button = tk.Button(root, text="Start Screen Capture", command=start_live_view)
 start_button.pack(pady=50)
+ 
+# Wait for 2 seconds
+time.sleep(10)
+
+# Move mouse to (100, 100) over 1 second
+move_mouse(700, 150)
+
+# Wait for 2 seconds
+time.sleep(2)
+
+# Simulate spacebar press
+simulate_spacebar()
 
 # Run the Tkinter main loop
 root.mainloop()
