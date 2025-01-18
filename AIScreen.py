@@ -6,6 +6,7 @@ from threading import Thread, Event
 import time
 import os
 from pynput import mouse, keyboard
+import pyautogui
 
 # Create directories for saving images
 os.makedirs("Jump", exist_ok=True)
@@ -21,6 +22,13 @@ bottom_right = (1260,281) # Bottom-right coordinate (x, y)
 setting_top_left = False
 setting_bottom_right = False
 pause_idle_event = Event()
+
+def simulate_spacebar():
+    """
+    Simulates a spacebar press.
+    """
+    pyautogui.press('space')
+    print("Spacebar pressed")
 
 
 def save_image(image, folder, count):

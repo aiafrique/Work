@@ -1,12 +1,29 @@
 from keras.models import load_model  # TensorFlow is required for Keras to work
 import cv2  # Install opencv-python
 import numpy as np
+import time
+from tensorflow.keras.layers import DepthwiseConv2D
+from pynput import mouse, keyboard
+import pyautogui
+
+def simulate_spacebar():
+    """
+    Simulates a spacebar press.
+    """
+    pyautogui.press('space')
+    print("Spacebar pressed")
+
+class CompatibleDepthwiseConv2D(DepthwiseConv2D):
+    def __init__(self, *args, groups=None, **kwargs):
+        if groups is not None:
+            print("Ignoring groups parameter for compatibility")
+        super().__init__(*args, **kwargs)
 
 # Disable scientific notation for clarity
 np.set_printoptions(suppress=True)
 
 # Load the model
-model = load_model("keras_Model.h5", compile=False)
+model = load_model("keras_Model.h5", custom_objects={"DepthwiseConv2D": CompatibleDepthwiseConv2D})#compile=False)
 
 # Load the labels
 class_names = open("labels.txt", "r").readlines()
@@ -37,7 +54,11 @@ while True:
     confidence_score = prediction[0][index]
 
     # Print prediction and confidence score
+    classtxt = class_name[2:].strip()
     print("Class:", class_name[2:], end="")
+    if classtxt== "Idle":
+        simulate_spacebar();
+    
     print("Confidence Score:", str(np.round(confidence_score * 100))[:-2], "%")
 
     # Listen to the keyboard for presses.
