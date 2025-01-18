@@ -16,8 +16,8 @@ jump_count = 0
 idle_count = 0
 capture_idle = True  # Used to toggle idle capturing
 tk_image = None      # Placeholder for the current Tkinter image
-top_left = None      # Top-left coordinate (x, y)
-bottom_right = None  # Bottom-right coordinate (x, y)
+top_left = (733,150)     # Top-left coordinate (x, y)
+bottom_right = (1260,281) # Bottom-right coordinate (x, y)
 setting_top_left = False
 setting_bottom_right = False
 pause_idle_event = Event()
@@ -61,7 +61,7 @@ def start_live_view():
         with mss.mss() as sct:
             while True:
                 # Pause idle capturing if the event is set
-                pause_idle_event.wait()
+                #pause_idle_event.wait()
 
                 screenshot = sct.grab(capture_region)
                 frame = np.array(screenshot)
@@ -83,7 +83,7 @@ def start_live_view():
                 if capture_idle:
                     idle_count += 1
                     save_image(tk_image, "Idle", idle_count)
-                    time.sleep(0.5)
+                    time.sleep(1)
 
                 # Break the loop if the window is closed
                 if not live_window.winfo_exists():
@@ -131,13 +131,13 @@ def on_key_press(key):
             if tk_image is not None:
                 # Pause idle capturing for 1 second
                 capture_idle = False
-                pause_idle_event.clear()  # Stop idle capture thread
+                #pause_idle_event.clear()  # Stop idle capture thread
                 jump_count += 1
                 save_image(tk_image, "Jump", jump_count)
 
-                time.sleep(1)  # Pause for 1 second
+                time.sleep(0.5)  # Pause for 1 second
                 capture_idle = True
-                pause_idle_event.set()  # Resume idle capture thread
+                #pause_idle_event.set()  # Resume idle capture thread
     except AttributeError:
         pass
 
