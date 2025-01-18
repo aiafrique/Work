@@ -47,7 +47,7 @@ while True:
     # Normalize the image array
     image = (image / 127.5) - 1
 
-    # Predicts the model
+    # Predicts the model                     
     prediction = model.predict(image)
     index = np.argmax(prediction)
     class_name = class_names[index]
@@ -56,7 +56,7 @@ while True:
     # Print prediction and confidence score
     classtxt = class_name[2:].strip()
     print("Class:", class_name[2:], end="")
-    if classtxt== "Idle":
+    if classtxt== "Jump":
         simulate_spacebar();
     
     print("Confidence Score:", str(np.round(confidence_score * 100))[:-2], "%")
