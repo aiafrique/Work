@@ -2,11 +2,10 @@ import tkinter as tk
 import cv2
 import numpy as np
 import mss
-from threading import Thread
-import pyautogui
+from threading import Thread, Event
 import time
 import os
-from pynput import mouse
+from pynput import mouse, keyboard
 
 # Create directories for saving images
 os.makedirs("Jump", exist_ok=True)
@@ -21,6 +20,7 @@ top_left = None      # Top-left coordinate (x, y)
 bottom_right = None  # Bottom-right coordinate (x, y)
 setting_top_left = False
 setting_bottom_right = False
+pause_idle_event = Event()
 
 
 def save_image(image, folder, count):
@@ -60,6 +60,9 @@ def start_live_view():
 
         with mss.mss() as sct:
             while True:
+                # Pause idle capturing if the event is set
+                pause_idle_event.wait()
+
                 screenshot = sct.grab(capture_region)
                 frame = np.array(screenshot)
                 frame = cv2.cvtColor(frame, cv2.COLOR_BGRA2BGR)
@@ -90,14 +93,6 @@ def start_live_view():
     Thread(target=capture_screen, daemon=True).start()
 
 
-# Spacebar key binding to save the current image in the "Jump" folder
-def on_spacebar_press(event):
-    global tk_image, jump_count
-    if tk_image is not None:
-        jump_count += 1
-        save_image(tk_image, "Jump", jump_count)
-
-
 def set_position_top_left():
     """Enable setting the top-left position by clicking anywhere on the screen."""
     global setting_top_left
@@ -113,7 +108,7 @@ def set_position_bottom_right():
 
 
 # Listener for mouse click events
-def on_click(x, y, button, pressed):
+def on_mouse_click(x, y, button, pressed):
     global top_left, bottom_right, setting_top_left, setting_bottom_right
 
     if pressed:  # Only handle mouse press
@@ -127,18 +122,39 @@ def on_click(x, y, button, pressed):
             print(f"Bottom-right position set to: {bottom_right}")
 
 
+# Global keyboard listener
+def on_key_press(key):
+    global tk_image, jump_count, capture_idle
+
+    try:
+        if key == keyboard.Key.space:  # Spacebar key press
+            if tk_image is not None:
+                # Pause idle capturing for 1 second
+                capture_idle = False
+                pause_idle_event.clear()  # Stop idle capture thread
+                jump_count += 1
+                save_image(tk_image, "Jump", jump_count)
+
+                time.sleep(1)  # Pause for 1 second
+                capture_idle = True
+                pause_idle_event.set()  # Resume idle capture thread
+    except AttributeError:
+        pass
+
+
 # Start the mouse listener in a separate thread
-mouse_listener = mouse.Listener(on_click=on_click)
+mouse_listener = mouse.Listener(on_click=on_mouse_click)
 mouse_listener.start()
+
+# Start the keyboard listener in a separate thread
+keyboard_listener = keyboard.Listener(on_press=on_key_press)
+keyboard_listener.start()
 
 
 # Create the main application window
 root = tk.Tk()
 root.title("Screen Capture App")
 root.geometry("600x400")
-
-# Bind the spacebar key press to save images
-root.bind("<space>", on_spacebar_press)
 
 # Add buttons to set top-left and bottom-right positions
 set_top_left_button = tk.Button(root, text="Set Top-Left Position", command=set_position_top_left)
@@ -150,6 +166,9 @@ set_bottom_right_button.pack(pady=10)
 # Add a button to start the live screen capture
 start_button = tk.Button(root, text="Start Screen Capture", command=start_live_view)
 start_button.pack(pady=10)
+
+# Ensure the idle capture thread starts
+pause_idle_event.set()
 
 # Run the Tkinter main loop
 root.mainloop()

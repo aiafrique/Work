@@ -64,3 +64,5 @@ This project is licensed under the MIT License.
 ---
 
 Happy coding!
+Top-left position set to: (733, 150)
+Bottom-right position set to: (1260, 281)
